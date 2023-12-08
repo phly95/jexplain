@@ -1,6 +1,6 @@
 import openai
 
-openai.api_key = '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'
+openai.api_key = [Enter API key here]
 
 async def chat_stream(prompto):
   for chunk in openai.ChatCompletion.create(
