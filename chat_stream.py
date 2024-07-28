@@ -1,19 +1,12 @@
-import deepl
-from groq import Groq
 import os
+from openai import OpenAI
 
-auth_key=os.environ.get("DEEPL_API_KEY")
-translator = deepl.Translator(auth_key)
-groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-async def deepl(prompto):
-   result = translator.translate_text(prompto, target_lang="EN-US")
-   print(result.text, end='')
-   return result.text
 
-async def chat_stream_groq(prompto, model_set="llama3-70b-8192", temperature_set=0.0):
+async def chat_stream(prompto, model_set="gpt-4o-mini", temperature_set=0.0):
   totalstring = ""
-  for chunk in groq_client.chat.completions.create(model=model_set,
+  for chunk in client.chat.completions.create(model=model_set,
   temperature = temperature_set,
   messages=[{
       "role": "user",

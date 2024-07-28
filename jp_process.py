@@ -1,5 +1,5 @@
 import pyperclip
-from chat_stream import deepl, chat_stream_groq
+from chat_stream import chat_stream
 import asyncio
 import subprocess
 import re
@@ -8,16 +8,43 @@ import os
 
 def jp_process():
     japanese_sentence = pyperclip.paste().replace('\n', '').replace('\r', '')
-    bprompt = f"In plain text, first, translate the Japanese sentence. Then, in this format \"- 言葉【ことば】: Context-specific English definition\" define each individual word (including particles) in the Japanese sentence in its original conjugation. Include the furigana, even if it's not needed (eg. \"おい【おい】: hey\").:\" 「{japanese_sentence}」 Your output should start with \"Translation:\". Do not explain what you are about to do. After translation, you will write \"Breakdown:\" and bullet the list with hyphens \"- \""
+    bprompt = f'''
+Translate and break down this Japanese sentence:
+<japanese_sentence>
+{japanese_sentence}
+</japanese_sentence>
+
+Format:
+English Translation: [Full sentence translation]
+
+Breakdown:
+- [Word or Phrase]【ふりがな】: Context-specific definition
+
+Rules:
+1. Include particles within larger phrases when appropriate
+2. Use original word forms
+3. Always use 【ふりがな】, even for hiragana
+4. Only hiragana in 【】
+5. One 【】 per lexical unit (word or meaningful phrase)
+6. Keep idiomatic expressions and set phrases together (e.g., 何かの縁)
+7. No explanations outside format
+8. No spaces in ふりがな
+
+Examples of phrases to keep together:
+- 何かの縁【なにかのえん】
+- ここまで【ここまで】
+- であろう【であろう】
+    '''
+    # print(bprompt)
     print("Sentence: " + japanese_sentence + "\n")
-    asyncio.run(chat_stream_groq(bprompt))
+    asyncio.run(chat_stream(bprompt))
 
 def kj_process():
     kanji = pyperclip.paste().replace('\n', '').replace('\r', '')
-    bprompt = f"What does each kanji in the word「{kanji}」 mean?"
-    asyncio.run(chat_stream_groq(bprompt))
+    bprompt = f"What does each kanji in the word「{kanji}」 mean? Use the format of \n```\nThe individual kanji for <word> are:\n\n- <kanji> means <define>. In this context, <explain>.\n```"
+    asyncio.run(chat_stream(bprompt))
 
-def mnemonic_process(temp):
+def mnemonic_process():
     text = pyperclip.paste()
     # Split the text into lines
     lines = text.splitlines()
@@ -39,17 +66,23 @@ def mnemonic_process(temp):
         result += ', '
     result += ', '.join(composed_parts)
     bprompt = f'Write a sentence using the following words: {result}. Each word listed should be bolded using markdown (surrounded by two asterisks "**"), except the main word, {main_word} should be surrounded by three asterisks, like so: "***{main_word}***".'
-    mnemonic = chat_stream_groq(bprompt)
+    mnemonic = asyncio.run(chat_stream(bprompt))
     return mnemonic
 
 def tr_process():
     japanese_sentence = pyperclip.paste().replace('\n', '').replace('\r', '')
     bprompt = f"Translate this to English:「{japanese_sentence}」. Respond with only the translation without using quotation marks."
-    translation = asyncio.run(deepl(japanese_sentence))
+    translation = asyncio.run(chat_stream(bprompt))
+    return translation
+
+def tr_agressive():
+    japanese_sentence = pyperclip.paste().replace('\n', '').replace('\r', '')
+    bprompt = f"Break down the sentence and how it may not be a literal translation, then determine the literal and literary translation in English of this: {japanese_sentence}" # Example: 抵抗のできない僕はのけぞるようにして宙を舞う。
+    translation = asyncio.run(chat_stream(bprompt))
     return translation
 
 def chat_with(question):
-    asyncio.run(chat_stream_groq(question))
+    asyncio.run(chat_stream(question))
 
 def speak(voice):
     japanese_sentence = pyperclip.paste().replace('\n', '').replace('\r', '')
