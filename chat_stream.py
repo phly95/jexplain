@@ -2,7 +2,7 @@ import os
 from openai import OpenAI
 
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-
+# client = OpenAI(api_key=os.environ.get("TOGETHER_API_KEY"), base_url="http://localhost:1234/v1")
 
 async def chat_stream(prompto, model_set="gpt-4o-mini", temperature_set=0.0):
   totalstring = ""

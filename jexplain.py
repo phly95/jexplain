@@ -27,7 +27,7 @@ current_copy_mode = load_copy_mode()
 
 
 
-from jp_process import jp_process, chat_with, kj_process, tr_process, tr_agressive, mnemonic_process, speak#, screen_process
+from jp_process import jp_process, jp_process_lite, chat_with, kj_process, tr_process, tr_agressive, mnemonic_process, speak#, screen_process
 from win_focus import set_title, winfocus, clear_screen, clear_input_buffer
 import keyboard
 import pyautogui
@@ -46,7 +46,7 @@ while True:
                 copy_modes[current_copy_mode]['function']()  # Execute the current copy mode
 
                 winfocus("jexplain_window")
-                jp_process()
+                jp_process_lite()
                 print("\n***\n", end="")
         if keyboard.is_pressed('ctrl+win+]'):
                 while keyboard.is_pressed('ctrl') or keyboard.is_pressed('win') or keyboard.is_pressed(']'): #wait until keys are released

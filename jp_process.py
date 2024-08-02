@@ -5,6 +5,7 @@ import subprocess
 import re
 import azure.cognitiveservices.speech as speechsdk
 import os
+from furigana_lookup import get_furigana, print_furigana
 
 def jp_process():
     japanese_sentence = pyperclip.paste().replace('\n', '').replace('\r', '')
@@ -37,6 +38,36 @@ Examples of phrases to keep together:
     '''
     # print(bprompt)
     print("Sentence: " + japanese_sentence + "\n")
+    asyncio.run(chat_stream(bprompt))
+
+def jp_process_lite():
+    japanese_sentence = pyperclip.paste().replace('\n', '').replace('\r', '')
+    bprompt = f'''
+Translate and break down this Japanese sentence:
+
+{japanese_sentence}
+
+Format:
+English Translation: [Full sentence translation]
+
+Breakdown:
+- [Word]: Context-specific definition
+
+Rules:
+1. Include particles.
+2. Use original word forms.
+3. Include the entire sentence (excluding punctuation) in the breakdown.
+4. Do not add any words that are not in the original sentence.
+5. Provide the response in plain text format without any formatting (no bold, italics, etc.).
+6. Do not provide transliterations.
+    '''
+    # print(bprompt)
+    print("Sentence: " + japanese_sentence + "\n")
+        # Get furigana for the sentence
+    results = get_furigana(japanese_sentence)
+    print("Furigana:")
+    print_furigana(results)
+    print("")
     asyncio.run(chat_stream(bprompt))
 
 def kj_process():
