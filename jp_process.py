@@ -42,10 +42,16 @@ Examples of phrases to keep together:
 
 def jp_process_lite():
     japanese_sentence = pyperclip.paste().replace('\n', '').replace('\r', '')
-    bprompt = f'''
-Translate and break down this Japanese sentence:
+    bprompt = f'''Example:
+Japanese Sentence: 私は学生です。
 
-{japanese_sentence}
+English Translation: I am a student.
+
+Breakdown:
+- 私: I
+- は: topic marker
+- 学生: student
+- です: am
 
 Format:
 English Translation: [Full sentence translation]
@@ -59,8 +65,10 @@ Rules:
 3. Include the entire sentence (excluding punctuation) in the breakdown.
 4. Do not add any words that are not in the original sentence.
 5. Provide the response in plain text format without any formatting (no bold, italics, etc.).
-6. Do not provide transliterations.
-    '''
+6. Do not provide transliterations, phonetic spellings, romanizations, alphabetizations, or phonetic representations.
+
+Translate and break down this Japanese sentence:
+{japanese_sentence}'''
     # print(bprompt)
     print("Sentence: " + japanese_sentence + "\n")
         # Get furigana for the sentence
@@ -70,9 +78,22 @@ Rules:
     print("")
     asyncio.run(chat_stream(bprompt))
 
+def extract_kanji(text):
+    # Use regular expression to find all kanji characters
+    kanji_pattern = re.compile(r'[\u4e00-\u9fff]')
+    return kanji_pattern.findall(text)
+
 def kj_process():
-    kanji = pyperclip.paste().replace('\n', '').replace('\r', '')
-    bprompt = f"What does each kanji in the word「{kanji}」 mean? Use the format of \n```\nThe individual kanji for <word> are:\n\n- <kanji> means <define>. In this context, <explain>.\n```"
+    input_text = pyperclip.paste().replace('\n', '').replace('\r', '')
+    kanji_list = extract_kanji(input_text)
+    kanji_string = ', '.join(kanji_list)
+
+    # Append the list of kanji to the input text if there are any kanji characters
+    if kanji_list:
+        input_text += f" (kanji: {kanji_string})"
+
+    bprompt = f"What does each kanji in the word「{input_text}」 mean? Use the format of \n```\nThe individual kanji for <word> are:\n\n- <kanji> means <define>. In this context, <explain>.\n```"
+    # print(bprompt)
     asyncio.run(chat_stream(bprompt))
 
 def mnemonic_process():
@@ -94,9 +115,35 @@ def mnemonic_process():
         composed_index += 1
     composed_parts = [part for part in (re.sub(r'[^\x00-\x7F]+', '', line.strip()) for line in lines[composed_index+1:]) if part]
     if result:
-        result += ', '
+        result += '; '
     result += ', '.join(composed_parts)
-    bprompt = f'Write a sentence using the following words: {result}. Each word listed should be bolded using markdown (surrounded by two asterisks "**"), except the main word, {main_word} should be surrounded by three asterisks, like so: "***{main_word}***".'
+    # bprompt = f'Write a sentence using the following words: {result}. Each word listed should be bolded using markdown (surrounded by two asterisks "**"), except the main word, {main_word} should be surrounded by three asterisks, like so: "***{main_word}***".'
+    bprompt = f'''Instructions:
+1. Create a single, coherent, and meaningful sentence using ALL and ONLY the words provided in the "Word list" below.
+2. The sentence must make logical sense.
+3. Do not add, remove, or substitute any words from the given list.
+4. Write the sentence first without any formatting.
+5. Then, rewrite the same sentence with the following formatting:
+   - The main word (specified separately) should be wrapped in triple asterisks: ***main_word***
+   - All other words from the provided list should be wrapped in double asterisks: **word**
+   - Words not from the list should remain unformatted.
+
+Example:
+Word list: argument; say, sloped roof, volume (of a book)
+Main word: argument
+
+Example Output:
+Unformatted sentence:
+I wanted to say there's something wrong about having a sloped roof, but a volume of a book I read invalidated any argument.
+
+Formatted sentence:
+I wanted to **say** there's something wrong about having a **sloped roof**, but a **volume** of a book I read invalidated any ***argument***.
+
+Now, please follow the instructions for the following:
+
+Word list: {result}
+Main word: {main_word}'''
+    # print(bprompt)
     mnemonic = asyncio.run(chat_stream(bprompt))
     return mnemonic
 
