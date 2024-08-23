@@ -21,7 +21,7 @@ To run the program, simply execute the `jexplain.py` file with Python.
 * **Ctrl+Win+]:** Generate a mnemonic sentence with the highlighted text.
 * **Ctrl+Win+::** Speak the highlighted Japanese text.
 * **Ctrl+Win+F12:** Speak the highlighted English text. 
-* **Ctrl+Win+[:** Change the copy mode. This is remembered next time you run the script. See copy_modes.py to see the modes.
+* **Ctrl+Win+[:** Change the copy mode. This is remembered next time you run the script. See copy_modes.py to see the modes. The mokuro mode works for reading manga btw.
 
 ## Functionality
 
