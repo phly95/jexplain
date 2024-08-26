@@ -1,6 +1,15 @@
+# jexplain.py
+
 import os
 import json
+import time
+import pyperclip
+import pyautogui
+from lin_keyboard import LinKeyboard, simulate_after_delay
 from copy_modes import copy_modes
+from jp_process import jp_process, jp_process_lite, chat_with, kj_process, tr_process, tr_agressive, mnemonic_process, speak
+from win_focus import set_title, winfocus, clear_screen, clear_input_buffer
+import subprocess
 
 # Get the directory of the current script
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -25,83 +34,111 @@ def save_copy_mode(mode):
 # Initialize the current copy mode
 current_copy_mode = load_copy_mode()
 
+# Initialize the LinKeyboard
+lin_kb = LinKeyboard()
 
+def force_current_focus(): # Workaround to fix X11 focus issues.
+    # Get the ID of the currently active window
+    active_window_id = get_active_window_id()
+    
+    # Ensure the original window is in focus (X11 focus loss workaround)
+    winfocus("jexplain_window")
+    time.sleep(0.1)
+    focus_window(active_window_id)
 
-from jp_process import jp_process, jp_process_lite, chat_with, kj_process, tr_process, tr_agressive, mnemonic_process, speak#, screen_process
-from win_focus import set_title, winfocus, clear_screen, clear_input_buffer
-import keyboard
-import pyautogui
-import time
-import pyperclip
+def get_active_window_id():
+    return subprocess.check_output(["xdotool", "getactivewindow"]).decode().strip()
 
-set_title("jexplain_window")
-print("Ready for scanning")
-while True:
-        time.sleep(0.05)
-        if keyboard.is_pressed('ctrl+win+z'):
-                while keyboard.is_pressed('ctrl') or keyboard.is_pressed('win') or keyboard.is_pressed('\\'): #wait until keys are released
-                        pass
-                clear_screen()
-                
-                copy_modes[current_copy_mode]['function']()  # Execute the current copy mode
+def focus_window(window_id):
+    subprocess.run(["xdotool", "windowactivate", window_id])
 
-                winfocus("jexplain_window")
-                jp_process_lite()
-                print("\n***\n", end="")
-        if keyboard.is_pressed('ctrl+win+]'):
-                while keyboard.is_pressed('ctrl') or keyboard.is_pressed('win') or keyboard.is_pressed(']'): #wait until keys are released
-                        pass
-                clear_screen()
-                #print("Engaged")
-                pyautogui.hotkey('ctrl','c')# 
-                winfocus("jexplain_window")
-                mnemonic = mnemonic_process()
-                pyperclip.copy(mnemonic)
-                #winfocus("jexplain_window")
-                print("\n***\n", end="")
-        if keyboard.is_pressed('ctrl+win+['):
-                while keyboard.is_pressed('ctrl') or keyboard.is_pressed('win') or keyboard.is_pressed('['): #wait until keys are released
-                        pass
-                current_copy_mode = (current_copy_mode + 1) % len(copy_modes)
-                save_copy_mode(current_copy_mode)
-                print(f"Copy mode changed to: {copy_modes[current_copy_mode]['name']}")
-        if keyboard.is_pressed('ctrl+win+x'):
-                while keyboard.is_pressed('ctrl') or keyboard.is_pressed('win') or keyboard.is_pressed('x'): #wait until keys are released
-                        pass
-                # print("Speaking")
+def on_ctrl_win_z():
+    clear_screen()
+    
+    force_current_focus()
+    
+    # Perform the copy operation
+    copy_modes[current_copy_mode]['function']()  # Execute the current copy mode
+    
+    # Switch back to the jexplain window
+#     winfocus("jexplain_window")
+    
+    # Process the copied content
+    jp_process_lite()
+    
+    print("\n***\n", end="")
 
-                copy_modes[current_copy_mode]['function']()  # Execute the current copy mode
+def on_ctrl_win_bracket_right():
+    clear_screen()
+    
+    force_current_focus()
 
-                speak('ja-JP-ShioriNeural')
-                print("***\n", end="")
-        if keyboard.is_pressed('ctrl+win+f12'):
-                while keyboard.is_pressed('ctrl') or keyboard.is_pressed('win') or keyboard.is_pressed('f12'): #wait until keys are released
-                        pass
-                # print("Speaking")
-                time.sleep(0.1)
-                pyautogui.hotkey('ctrl','c')# 
-                speak('en-US-AvaNeural')
-                print("***\n", end="")
-        elif keyboard.is_pressed('ctrl+win+a'):
-                while keyboard.is_pressed('ctrl') or keyboard.is_pressed('win') or keyboard.is_pressed('a'): #wait until keys are released
-                        pass
-                clear_input_buffer()
-                chat_with(input("\nAsk a question: "))
-                print("\n***\n", end="")
-        elif keyboard.is_pressed('ctrl+win+tab'):
-                while keyboard.is_pressed('ctrl') or keyboard.is_pressed('win') or keyboard.is_pressed('tab'): #wait until keys are released
-                        pass
-                # pyautogui.hotkey('ctrl', 'c')
-                tr_process()
-                print("\n***\n", end="")
-        elif keyboard.is_pressed('ctrl+win+-'):
-                while keyboard.is_pressed('ctrl') or keyboard.is_pressed('win') or keyboard.is_pressed('-'): #wait until keys are released
-                        pass
-                # pyautogui.hotkey('ctrl', 'c')
-                tr_agressive()
-                print("\n***\n", end="")
-        elif keyboard.is_pressed('ctrl+win+k'):
-                while keyboard.is_pressed('ctrl') or keyboard.is_pressed('win') or keyboard.is_pressed('k'): #wait until keys are released
-                        pass
-                kj_process()
-                print("\n***\n", end="")
+    simulate_after_delay(0.1, LinKeyboard.simulate_hotkey, 'ctrl', 'c')
+    winfocus("jexplain_window")
+    mnemonic = mnemonic_process()
+    pyperclip.copy(mnemonic)
+    print("\n***\n", end="")
+
+def on_ctrl_win_bracket_left():
+    global current_copy_mode
+    current_copy_mode = (current_copy_mode + 1) % len(copy_modes)
+    save_copy_mode(current_copy_mode)
+    print(f"Copy mode changed to: {copy_modes[current_copy_mode]['name']}")
+
+def on_ctrl_win_x():
+    force_current_focus()
+    copy_modes[current_copy_mode]['function']()
+    speak('ja-JP-ShioriNeural')
+    print("***\n", end="")
+
+def on_ctrl_win_f12():
+    force_current_focus()
+    simulate_after_delay(0.1, LinKeyboard.simulate_hotkey, 'ctrl', 'c')
+    speak('en-US-AvaNeural')
+    print("***\n", end="")
+
+def on_ctrl_win_a():
+    clear_input_buffer()
+    chat_with(input("\nAsk a question: "))
+    print("\n***\n", end="")
+
+def on_ctrl_win_tab():
+    tr_process()
+    print("\n***\n", end="")
+
+def on_ctrl_win_equals():
+    tr_agressive()
+    print("\n***\n", end="")
+
+def on_ctrl_win_k():
+    kj_process()
+    print("\n***\n", end="")
+
+# Add key combinations
+lin_kb.add_combination({'ctrl', 'cmd', 'z'}, on_ctrl_win_z)
+lin_kb.add_combination({'ctrl', 'cmd', ']'}, on_ctrl_win_bracket_right)
+lin_kb.add_combination({'ctrl', 'cmd', '['}, on_ctrl_win_bracket_left)
+lin_kb.add_combination({'ctrl', 'cmd', 'x'}, on_ctrl_win_x)
+lin_kb.add_combination({'ctrl', 'cmd', 'f12'}, on_ctrl_win_f12)
+lin_kb.add_combination({'ctrl', 'cmd', 'a'}, on_ctrl_win_a)
+lin_kb.add_combination({'ctrl', 'cmd', 'tab'}, on_ctrl_win_tab)
+lin_kb.add_combination({'ctrl', 'cmd', '='}, on_ctrl_win_equals)
+lin_kb.add_combination({'ctrl', 'cmd', 'k'}, on_ctrl_win_k)
+
+# Main execution
+if __name__ == "__main__":
+    set_title("jexplain_window")
+    print("Ready for scanning")
+
+    # Start listening for key events
+    lin_kb.start()
+
+    try:
+        # Keep the script running
+        while True:
+            time.sleep(0.05)
+    except KeyboardInterrupt:
+        print("Exiting...")
+    finally:
+        # Stop listening for key events
+        lin_kb.stop()

@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+import shutil
 import pyautogui
 
 # Platform-specific imports
@@ -20,8 +21,13 @@ def winfocus(title):
         w.find_window_wildcard(".*jexplain_window.*")
         w.set_foreground()
     else:
-        # For Linux, you might need to use a different approach, such as using `xdotool`
-        subprocess.run(["xdotool", "search", "--name", title, "windowfocus"])
+        if shutil.which("xdotool"):
+            try:
+                subprocess.run(["xdotool", "search", "--name", title, "windowfocus"], check=True)
+            except subprocess.CalledProcessError:
+                print(f"Failed to focus window: {title}")
+        else:
+            print("xdotool is not installed. Window focusing will not work on Linux.")
 
 def set_title(title):
     if os.name == 'nt':
@@ -36,8 +42,8 @@ def clear_screen():
         os.system('clear')
 
 def print_bottom(text):
-    sys.stdout.write("\033[J") # Clear everything below the cursor
-    sys.stdout.write("\033[999;1H") # Move cursor to the last line
+    sys.stdout.write("\033[J")  # Clear everything below the cursor
+    sys.stdout.write("\033[999;1H")  # Move cursor to the last line
     print(text, end="")
 
 def clear_input_buffer():
@@ -59,8 +65,15 @@ class WindowMgr:
         if os.name == 'nt':
             self._handle = win32gui.FindWindow(class_name, window_name)
         else:
-            # For Linux, you might need to use a different approach, such as using `xdotool`
-            self._handle = subprocess.check_output(["xdotool", "search", "--name", window_name]).strip()
+            if shutil.which("xdotool"):
+                try:
+                    self._handle = subprocess.check_output(["xdotool", "search", "--name", window_name]).strip()
+                except subprocess.CalledProcessError:
+                    print(f"Failed to find window: {window_name}")
+                    self._handle = None
+            else:
+                print("xdotool is not installed. Window management will not work on Linux.")
+                self._handle = None
 
     def _window_enum_callback(self, hwnd, wildcard):
         """Pass to win32gui.EnumWindows() to check all the opened windows"""
@@ -74,15 +87,27 @@ class WindowMgr:
             self._handle = None
             win32gui.EnumWindows(self._window_enum_callback, wildcard)
         else:
-            # For Linux, you might need to use a different approach, such as using `xdotool`
-            self._handle = subprocess.check_output(["xdotool", "search", "--name", wildcard]).strip()
+            if shutil.which("xdotool"):
+                try:
+                    self._handle = subprocess.check_output(["xdotool", "search", "--name", wildcard]).strip()
+                except subprocess.CalledProcessError:
+                    print(f"Failed to find window matching: {wildcard}")
+                    self._handle = None
+            else:
+                print("xdotool is not installed. Window management will not work on Linux.")
+                self._handle = None
 
     def set_foreground(self):
         """put the window in the foreground"""
         if os.name == 'nt':
             win32gui.SetForegroundWindow(self._handle)
         else:
-            # For Linux, you might need to use a different approach, such as using `xdotool`
-            subprocess.run(["xdotool", "windowfocus", self._handle])
+            if shutil.which("xdotool") and self._handle:
+                try:
+                    subprocess.run(["xdotool", "windowfocus", self._handle], check=True)
+                except subprocess.CalledProcessError:
+                    print("Failed to set window focus")
+            else:
+                print("xdotool is not installed or window handle is invalid. Cannot set foreground on Linux.")
 
 w = WindowMgr()
