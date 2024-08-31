@@ -10,6 +10,8 @@ from copy_modes import copy_modes
 from jp_process import jp_process, jp_process_lite, chat_with, kj_process, tr_process, tr_agressive, mnemonic_process, speak
 from win_focus import set_title, winfocus, clear_screen, clear_input_buffer
 import subprocess
+import threading
+
 
 # Get the directory of the current script
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -55,7 +57,7 @@ def focus_window(window_id):
 def on_ctrl_win_z():
     clear_screen()
     
-    force_current_focus()
+    # force_current_focus()
     
     # Perform the copy operation
     copy_modes[current_copy_mode]['function']()  # Execute the current copy mode
@@ -73,7 +75,7 @@ def on_ctrl_win_bracket_right():
     
     force_current_focus()
 
-    simulate_after_delay(0.1, LinKeyboard.simulate_hotkey, 'ctrl', 'c')
+    pyautogui.hotkey('ctrl', 'c')
     winfocus("jexplain_window")
     mnemonic = mnemonic_process()
     pyperclip.copy(mnemonic)
@@ -125,6 +127,17 @@ lin_kb.add_combination({'ctrl', 'cmd', 'tab'}, on_ctrl_win_tab)
 lin_kb.add_combination({'ctrl', 'cmd', '='}, on_ctrl_win_equals)
 lin_kb.add_combination({'ctrl', 'cmd', 'k'}, on_ctrl_win_k)
 
+
+def monitor_clipboard():
+    previous_clipboard_content = pyperclip.paste()
+    while True:
+        time.sleep(0.5)  # Adjust the sleep interval as needed
+        current_clipboard_content = pyperclip.paste()
+        if current_clipboard_content != previous_clipboard_content:
+            previous_clipboard_content = current_clipboard_content
+            on_ctrl_win_z()
+
+
 # Main execution
 if __name__ == "__main__":
     set_title("jexplain_window")
@@ -132,6 +145,10 @@ if __name__ == "__main__":
 
     # Start listening for key events
     lin_kb.start()
+
+    # Start clipboard monitoring thread
+    clipboard_thread = threading.Thread(target=monitor_clipboard, daemon=True)
+    clipboard_thread.start()
 
     try:
         # Keep the script running
@@ -142,3 +159,4 @@ if __name__ == "__main__":
     finally:
         # Stop listening for key events
         lin_kb.stop()
+
