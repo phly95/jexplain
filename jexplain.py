@@ -12,7 +12,6 @@ from win_focus import set_title, winfocus, clear_screen, clear_input_buffer
 import subprocess
 import threading
 
-
 # Get the directory of the current script
 script_dir = os.path.dirname(os.path.abspath(__file__))
 config_dir = os.path.join(script_dir, 'config')
@@ -42,7 +41,7 @@ lin_kb = LinKeyboard()
 def force_current_focus(): # Workaround to fix X11 focus issues.
     # Get the ID of the currently active window
     active_window_id = get_active_window_id()
-    
+
     # Ensure the original window is in focus (X11 focus loss workaround)
     winfocus("jexplain_window")
     time.sleep(0.1)
@@ -56,23 +55,23 @@ def focus_window(window_id):
 
 def on_ctrl_win_z():
     clear_screen()
-    
+
     # force_current_focus()
-    
+
     # Perform the copy operation
     copy_modes[current_copy_mode]['function']()  # Execute the current copy mode
-    
+
     # Switch back to the jexplain window
 #     winfocus("jexplain_window")
-    
+
     # Process the copied content
     jp_process_lite()
-    
+
     print("\n***\n", end="")
 
 def on_ctrl_win_bracket_right():
     clear_screen()
-    
+
     force_current_focus()
 
     pyautogui.hotkey('ctrl', 'c')
@@ -88,7 +87,7 @@ def on_ctrl_win_bracket_left():
     print(f"Copy mode changed to: {copy_modes[current_copy_mode]['name']}")
 
 def on_ctrl_win_x():
-    force_current_focus()
+    # force_current_focus()
     copy_modes[current_copy_mode]['function']()
     speak('ja-JP-ShioriNeural')
     print("***\n", end="")
@@ -113,6 +112,7 @@ def on_ctrl_win_equals():
     print("\n***\n", end="")
 
 def on_ctrl_win_k():
+    print("Kanji Explanation:")
     kj_process()
     print("\n***\n", end="")
 
@@ -127,16 +127,21 @@ lin_kb.add_combination({'ctrl', 'cmd', 'tab'}, on_ctrl_win_tab)
 lin_kb.add_combination({'ctrl', 'cmd', '='}, on_ctrl_win_equals)
 lin_kb.add_combination({'ctrl', 'cmd', 'k'}, on_ctrl_win_k)
 
-
 def monitor_clipboard():
     previous_clipboard_content = pyperclip.paste()
+    identifier = "[MPV]"
     while True:
-        time.sleep(0.5)  # Adjust the sleep interval as needed
+        time.sleep(0.05)  # Adjust the sleep interval as needed
         current_clipboard_content = pyperclip.paste()
         if current_clipboard_content != previous_clipboard_content:
-            previous_clipboard_content = current_clipboard_content
-            on_ctrl_win_z()
-
+            if current_clipboard_content.startswith(identifier):
+                # Remove the identifier
+                processed_content = current_clipboard_content[len(identifier):].strip()
+                previous_clipboard_content = current_clipboard_content
+                pyperclip.copy(processed_content)
+                on_ctrl_win_z()
+                # Optionally, update the clipboard with the processed content
+                # pyperclip.copy(processed_content)
 
 # Main execution
 if __name__ == "__main__":
@@ -159,4 +164,3 @@ if __name__ == "__main__":
     finally:
         # Stop listening for key events
         lin_kb.stop()
-

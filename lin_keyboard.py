@@ -1,9 +1,14 @@
 # lin_keyboard.py
 
-from pynput import keyboard
+import platform
 import threading
 import time
 import pyautogui
+
+if platform.system() == 'Windows':
+    import keyboard as kb
+else:
+    from pynput import keyboard
 
 class LinKeyboard:
     def __init__(self):
@@ -16,7 +21,12 @@ class LinKeyboard:
         self.all_keys_released_event = threading.Event()  # Add this event
 
     def add_combination(self, keys, on_activate):
-        self.combinations[frozenset(keys)] = on_activate
+        if platform.system() == 'Windows':
+            # Convert the set of keys to a string for Windows
+            key_str = '+'.join(keys)
+            self.combinations[key_str] = on_activate
+        else:
+            self.combinations[frozenset(keys)] = on_activate
 
     def _on_press(self, key):
         if self.action_in_progress:
@@ -62,14 +72,33 @@ class LinKeyboard:
     def start(self):
         if not self.is_running:
             self.is_running = True
-            self.listener = keyboard.Listener(on_press=self._on_press, on_release=self._on_release)
-            self.listener.start()
+            if platform.system() == 'Windows':
+                self._start_windows()
+            else:
+                self.listener = keyboard.Listener(on_press=self._on_press, on_release=self._on_release)
+                self.listener.start()
+
+    def _start_windows(self):
+        def check_keys():
+            while self.is_running:
+                time.sleep(0.05)
+                for combo, action in self.combinations.items():
+                    if all(kb.is_pressed(key) for key in combo.split('+')):
+                        while any(kb.is_pressed(key) for key in combo.split('+')):
+                            pass
+                        action()
+
+        self.listener = threading.Thread(target=check_keys)
+        self.listener.start()
 
     def stop(self):
         if self.is_running:
             self.is_running = False
-            if self.listener:
-                self.listener.stop()
+            if platform.system() == 'Windows':
+                kb.unhook_all()
+            else:
+                if self.listener:
+                    self.listener.stop()
 
     def join(self):
         if self.listener:
