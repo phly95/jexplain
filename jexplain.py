@@ -53,7 +53,7 @@ def monitor_clipboard():
                 # Trigger Ctrl+Win+Z action
                 clear_screen()
                 copy_modes[current_copy_mode]['function']()
-                winfocus("jexplain_window")
+                # winfocus("jexplain_window")
                 jp_process_lite()
                 print("\n***\n", end="")
 
@@ -73,28 +73,18 @@ while True:
         winfocus("jexplain_window")
         jp_process_lite()
         print("\n***\n", end="")
-    if keyboard.is_pressed('ctrl+win+]'):
-        while keyboard.is_pressed('ctrl') or keyboard.is_pressed('win') or keyboard.is_pressed(']'):
+    elif keyboard.is_pressed('ctrl+win+-'):
+        while keyboard.is_pressed('ctrl') or keyboard.is_pressed('win') or keyboard.is_pressed('-'):
             pass
-        clear_screen()
-        pyautogui.hotkey('ctrl', 'c')
-        winfocus("jexplain_window")
-        mnemonic = mnemonic_process()
-        pyperclip.copy(mnemonic)
+        tr_agressive()
         print("\n***\n", end="")
-    if keyboard.is_pressed('ctrl+win+['):
-        while keyboard.is_pressed('ctrl') or keyboard.is_pressed('win') or keyboard.is_pressed('['):
-            pass
-        current_copy_mode = (current_copy_mode + 1) % len(copy_modes)
-        save_copy_mode(current_copy_mode)
-        print(f"Copy mode changed to: {copy_modes[current_copy_mode]['name']}")
-    if keyboard.is_pressed('ctrl+win+x'):
+    elif keyboard.is_pressed('ctrl+win+x'):
         while keyboard.is_pressed('ctrl') or keyboard.is_pressed('win') or keyboard.is_pressed('x'):
             pass
         copy_modes[current_copy_mode]['function']()
         speak('ja-JP-ShioriNeural')
         print("***\n", end="")
-    if keyboard.is_pressed('ctrl+win+f12'):
+    elif keyboard.is_pressed('ctrl+win+f12'):
         while keyboard.is_pressed('ctrl') or keyboard.is_pressed('win') or keyboard.is_pressed('f12'):
             pass
         time.sleep(0.1)
@@ -112,13 +102,23 @@ while True:
             pass
         tr_process()
         print("\n***\n", end="")
-    elif keyboard.is_pressed('ctrl+win+-'):
-        while keyboard.is_pressed('ctrl') or keyboard.is_pressed('win') or keyboard.is_pressed('-'):
-            pass
-        tr_agressive()
-        print("\n***\n", end="")
     elif keyboard.is_pressed('ctrl+win+k'):
         while keyboard.is_pressed('ctrl') or keyboard.is_pressed('win') or keyboard.is_pressed('k'):
             pass
         kj_process()
         print("\n***\n", end="")
+    elif keyboard.is_pressed('ctrl+win+]'):
+        while keyboard.is_pressed('ctrl') or keyboard.is_pressed('win') or keyboard.is_pressed(']'):
+            pass
+        clear_screen()
+        pyautogui.hotkey('ctrl', 'c')
+        winfocus("jexplain_window")
+        mnemonic = mnemonic_process()
+        pyperclip.copy(mnemonic)
+        print("\n***\n", end="")
+    elif keyboard.is_pressed('ctrl+win+['):
+        while keyboard.is_pressed('ctrl') or keyboard.is_pressed('win') or keyboard.is_pressed('['):
+            pass
+        current_copy_mode = (current_copy_mode + 1) % len(copy_modes)
+        save_copy_mode(current_copy_mode)
+        print(f"Copy mode changed to: {copy_modes[current_copy_mode]['name']}")
