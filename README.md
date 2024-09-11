@@ -39,3 +39,4 @@ To run the program, simply execute the `jexplain.py` file with Python.
 * It utilizes the clipboard for text input.  
 * The terminal window is used for displaying outputs. 
 * "pip install mecab-python3" should resolve the mecab dependency. Windows binary is here if that doesn't work: https://github.com/ikegami-yukino/mecab/releases . If it's still not working on Windows, see: https://stackoverflow.com/questions/63197703/mecab-importerror-dll-load-failed-the-specified-module-could-not-be-found
+* For MPV realtime subtitles analysis, add the lua scripts to your MPV scripts folder. (eg. "%APPDATA%\mpv\scripts")
