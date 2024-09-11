@@ -1,3 +1,5 @@
+# copy_modes.py
+
 import pyautogui
 import time
 import pyperclip

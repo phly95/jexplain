@@ -66,6 +66,7 @@ Rules:
 4. Do not add any words that are not in the original sentence.
 5. Provide the response in plain text format without any formatting (no bold, italics, etc.).
 6. Do not provide transliterations, phonetic spellings, romanizations, alphabetizations, or phonetic representations.
+7. Keep definitions short, under 3 words.
 
 Translate and break down this Japanese sentence:
 {japanese_sentence}'''
