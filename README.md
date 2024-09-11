@@ -34,7 +34,7 @@ To run the program, simply execute the `jexplain.py` file with Python.
 
 ## Additional Notes:
 
-*  Ensure you have the required Python libraries installed (openai, keyboard, pyautogui, pyperclip, pip install pywin32, win32console, azure-cognitiveservices-speech, json, os, time, mecab-python3).
+*  Ensure you have the required Python libraries installed (openai, keyboard, pyautogui, pyperclip, pywin32, win32console, azure-cognitiveservices-speech, json, os, time, mecab-python3).
 * The program relies on keyboard shortcuts for activation.  
 * It utilizes the clipboard for text input.  
 * The terminal window is used for displaying outputs. 
