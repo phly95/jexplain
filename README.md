@@ -34,8 +34,9 @@ To run the program, simply execute the `jexplain.py` file with Python.
 
 ## Additional Notes:
 
-*  Ensure you have the required Python libraries installed (openai, keyboard, pyautogui, pyperclip, win32gui, win32console, azure-cognitiveservices-speech, json, os, time, mecab-python3).
+*  Ensure you have the required Python libraries installed (openai, keyboard, pyautogui, pyperclip, pywin32, win32console, azure-cognitiveservices-speech, json, os, time, mecab-python3).
 * The program relies on keyboard shortcuts for activation.  
 * It utilizes the clipboard for text input.  
 * The terminal window is used for displaying outputs. 
 * "pip install mecab-python3" should resolve the mecab dependency. Windows binary is here if that doesn't work: https://github.com/ikegami-yukino/mecab/releases . If it's still not working on Windows, see: https://stackoverflow.com/questions/63197703/mecab-importerror-dll-load-failed-the-specified-module-could-not-be-found
+* For MPV realtime subtitles analysis, add the lua scripts to your MPV scripts folder. (eg. "%APPDATA%\mpv\scripts")
